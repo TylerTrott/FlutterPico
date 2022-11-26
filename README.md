@@ -22,7 +22,7 @@ ssid -> your wifi name (case sensitive)
 password -> your wifi password
 atsign -> your atsign you uplaoded to pico 
 
-3. Run 'test_7.py' and this should initiate keys and then prompt you if you would like to run, enter 'y' and click return/enter key.
+3. Run 'key-led-blink.py' and this should initiate keys and then prompt you if you would like to run, enter 'y' and click return/enter key.
 4. You can confirm the software is working accordingly if atsign is authenticated in terminal.
 5. Pico is retrieving value of public key when output is just '0'
 
