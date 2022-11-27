@@ -48,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
     var atClient = atClientManager.atClient;
     try {
       AtValue val = await atClient.get(ledkey);
+      print('ledkey: ${ledkey.toString()}');
       print('val => ${val.value}');
       setState(() {
         state = val.value;
