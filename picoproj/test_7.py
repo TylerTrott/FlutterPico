@@ -38,17 +38,19 @@ def main():
     led = machine.Pin("LED", machine.Pin.OUT)
 
     key = 'led'
-    appAtSign = '@correctfirstdescent'
+    appAtSign = '@atSign'
     for i in range(5000):
         ledBool = atClient.get_public(key, appAtSign)
         print(ledBool)
         # actuate the onboard LED
-        if ledBool != None or int(ledBool) == 1:
+        if ledBool == None:
+            led.off()
+        if int(ledBool) == 1:
             led.on()
         else:
             led.off()
 
 if __name__ == '__main__':
     main()
-  
+   
     

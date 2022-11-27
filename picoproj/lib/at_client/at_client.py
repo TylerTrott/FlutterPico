@@ -1,9 +1,8 @@
 
 
-
 class AtClient:
 
-    def __init__(self, atSign: str, rootUrl: str = 'root.atsign.org:64', writeKeys:bool=True, secondary_address=None):
+    def __init__(self, atSign: str, rootUrl: str = 'root.atsign.org:64', writeKeys: bool = True, secondary_address=None):
         from lib.at_client.at_utils import format_atSign
         self.atSign = format_atSign(atSign)
         del format_atSign
@@ -16,7 +15,7 @@ class AtClient:
         """
         write pem parameters in the keys/@atSign/ folder
         reads from keys/@atSign_key.atKeys file and converts to pem parameters
-        
+
         """
         from lib.at_client.keys_util import initialize_keys
         initialize_keys(self.atSign)
@@ -29,9 +28,9 @@ class AtClient:
         """
         from lib.at_client.remote_secondary import RemoteSecondary
         self.remote_secondary = RemoteSecondary(self.atSign, self.rootUrl)
-        self.remote_secondary.connect_to_secondary(secondary_address=secondary_address) # can now run send_verb
+        self.remote_secondary.connect_to_secondary(
+            secondary_address=secondary_address)  # can now run send_verb
         del RemoteSecondary
-
 
     # Not working due to RSA decryption
     # def _get_shared_key_from_other(self, otherAtSign: str):
@@ -85,8 +84,10 @@ class AtClient:
         command: the command that was sent to the secondary
         """
         if self.remote_secondary is None:
-            raise Exception("Remote secondary is not initialized. Please call _initialize_remote_secondary() first.")
-        return self.remote_secondary.send_verb(verb_command) # returns (response, command)
+            raise Exception(
+                "Remote secondary is not initialized. Please call _initialize_remote_secondary() first.")
+        # returns (response, command)
+        return self.remote_secondary.send_verb(verb_command)
 
     # TODO ADD VERBOSE OPTION
     def put_public(self, keyName: str, value: str, ttr: int = 200) -> str:
@@ -101,7 +102,8 @@ class AtClient:
         return: response from the secondary
         """
         from lib.at_client.at_utils import format_atSign
-        verb = 'update:public:%s%s %s' %(keyName, format_atSign(self.atSign), value)
+        verb = 'update:public:%s%s %s' % (
+            keyName, format_atSign(self.atSign), value)
         del format_atSign
         import time
         time.sleep(1)
@@ -112,7 +114,7 @@ class AtClient:
         response = response.replace('data:', '')
         return response
 
-    def get_public(self, keyName: str, otherAtSign:str) -> str:
+    def get_public(self, keyName: str, otherAtSign: str) -> str:
         """
         """
         from lib.at_client.at_utils import format_atSign
@@ -121,7 +123,8 @@ class AtClient:
         import time
 
         # get the public key
-        verb = 'plookup:bypassCache:true:%s%s' %(keyName, otherAtSign)
+        verb = 'plookup:bypassCache:true:%s%s' % (
+            keyName + '.appName', otherAtSign)
         time.sleep(1)
         # print('Executing verb %s' %verb)
         response, command = self.send_verb(verb)
@@ -131,7 +134,7 @@ class AtClient:
         response = response.replace('data:', '')
         return response
 
-    def pkam_authenticate(self, verbose = False) -> None:
+    def pkam_authenticate(self, verbose=False) -> None:
         """
         to run this function, you must have your .atKeys file in the keys/ folder and _initialize_keys() must be called first (which is already done in the constructor)
         """
@@ -144,7 +147,8 @@ class AtClient:
 
         if verbose:
             print('Sending from:%s' % atSign)
-        response, command = self.remote_secondary.send_verb('from:%s' %atSignWithoutPrefix)
+        response, command = self.remote_secondary.send_verb(
+            'from:%s' % atSignWithoutPrefix)
         del command, atSignWithoutPrefix
         challenge = response.replace('@data:', '')
         del response
@@ -152,20 +156,24 @@ class AtClient:
             print('Challenge: %s' % challenge)
             print('Digesting...')
 
-        pemPkamPrivateKey = keys_util.get_pem_pkam_private_key_from_file(atSign) # parameters
-        rsaPkamPrivateKey = rsa.PrivateKey(pemPkamPrivateKey[0], pemPkamPrivateKey[1], pemPkamPrivateKey[2], pemPkamPrivateKey[3], pemPkamPrivateKey[4])
+        pemPkamPrivateKey = keys_util.get_pem_pkam_private_key_from_file(
+            atSign)  # parameters
+        rsaPkamPrivateKey = rsa.PrivateKey(
+            pemPkamPrivateKey[0], pemPkamPrivateKey[1], pemPkamPrivateKey[2], pemPkamPrivateKey[3], pemPkamPrivateKey[4])
         del pemPkamPrivateKey, atSign
 
         from lib.pem_service import b42_urlsafe_encode
-        signature = b42_urlsafe_encode(rsa.sign(challenge, rsaPkamPrivateKey, 'SHA-256'))
+        signature = b42_urlsafe_encode(
+            rsa.sign(challenge, rsaPkamPrivateKey, 'SHA-256'))
         del b42_urlsafe_encode, challenge, rsaPkamPrivateKey
 
         if verbose:
             print('Signature: %s' % str(signature))
-        response, command = self.remote_secondary.send_verb('pkam:' + signature)
+        response, command = self.remote_secondary.send_verb(
+            'pkam:' + signature)
         del command
 
         if verbose:
-            print(response) # data:success
+            print(response)  # data:success
 
         del signature
